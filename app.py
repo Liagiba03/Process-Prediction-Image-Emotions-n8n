@@ -45,13 +45,23 @@ def preprocess_image():
 @app.route('/predictEmotions', methods=['POST'])
 def predict_emotions():
     try:
-        # Obtener los datos procesados desde el cuerpo de la solicitud
-        data = request.form.get('image')
-        if not data or 'image' not in data:
+        # Obtener el archivo de imagen desde la solicitud
+        file = request.files.get('image')
+        if not file:
             return jsonify({"error": "No se proporcionó ninguna imagen procesada"}), 400
 
-        # Convertir los datos procesados a un array de NumPy
-        img_array = np.array(data['image'], dtype=np.float32)
+        # Leer la imagen y convertirla a escala de grises
+        img = Image.open(file).convert('L')
+        # Redimensionar la imagen al tamaño objetivo (por ejemplo, 48x48)
+        target_size = (48, 48)
+        img = img.resize(target_size)
+        # Convertir la imagen a un array de NumPy
+        img_array = np.array(img, dtype=np.float32)
+        # Normalizar los valores de los píxeles al rango [0, 1]
+        img_array = img_array / 255.0
+        # Expandir dimensiones para agregar el batch y los canales (1 para escala de grises)
+        img_array = np.expand_dims(img_array, axis=0)  # Agregar dimensión de lote
+        img_array = np.expand_dims(img_array, axis=-1)  # Agregar dimensión de canales
 
         # --------------------------API--------------------------
         try:
