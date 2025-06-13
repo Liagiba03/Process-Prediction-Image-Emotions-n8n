@@ -17,7 +17,7 @@ label_to_text = {0: 'Ira', 1: 'Odio', 2: 'Miedo', 3: 'Felicidad', 4: 'Tristeza',
 def preprocess_image():
     try:
         # Obtener la imagen desde la solicitud
-        file = request.files.get('image')
+        file = request.files.get('data')
         if not file:
             return jsonify({"error": "No se proporcionó ninguna imagen"}), 400
 
@@ -45,22 +45,26 @@ def preprocess_image():
 @app.route('/predictEmotions', methods=['POST'])
 def predict_emotions():
     try:
-        # Obtener la imagen procesada desde la solicitud
-        data = request.get_json()
-        if not data or 'image' not in data:
+        # Obtener la imagen procesada desde el campo 'data' en Form-Data
+        file = request.files.get('data')
+        if not file:
             return jsonify({"error": "No se proporcionó ninguna imagen procesada"}), 400
 
-        # Convertir los datos procesados a un array de NumPy
-        img_array = np.array(data['image'], dtype=np.float32)
+        # Leer la imagen y convertirla a un array de NumPy
+        img = Image.open(file).convert('L')
+        img_array = np.array(img, dtype=np.float32)
+        img_array = img_array / 255.0  # Normalizar los valores de los píxeles
+        img_array = np.expand_dims(img_array, axis=0)  # Agregar dimensión de lote
+        img_array = np.expand_dims(img_array, axis=-1)  # Agregar dimensión de canales
 
         # --------------------------API--------------------------
         try:
             # Preparar los datos para la API de predicción
-            data = json.dumps({"signature_name": "serving_default", "instances": img_array.tolist()})
+            payload = json.dumps({"signature_name": "serving_default", "instances": img_array.tolist()})
             headers = {'Content-Type': 'application/json'}
             json_response = requests.post(
                 'https://tfexpressions-v1.onrender.com/v1/models/saved_model/versions/2:predict',
-                data=data,
+                data=payload,
                 headers=headers,
                 verify=False
             )
