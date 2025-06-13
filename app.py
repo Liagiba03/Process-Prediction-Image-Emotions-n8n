@@ -46,7 +46,7 @@ def preprocess_image():
 def predict_emotions():
     try:
         # Obtener los datos procesados desde el cuerpo de la solicitud
-        data = request.get_json()
+        data = request.form('image')
         if not data or 'image' not in data:
             return jsonify({"error": "No se proporcionó ninguna imagen procesada"}), 400
 
