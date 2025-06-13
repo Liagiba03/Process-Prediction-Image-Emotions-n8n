@@ -17,7 +17,7 @@ label_to_text = {0: 'Ira', 1: 'Odio', 2: 'Miedo', 3: 'Felicidad', 4: 'Tristeza',
 def preprocess_image():
     try:
         # Obtener la imagen desde la solicitud
-        file = request.files.get('data')
+        file = request.files.get('image')
         if not file:
             return jsonify({"error": "No se proporcionó ninguna imagen"}), 400
 
@@ -46,7 +46,7 @@ def preprocess_image():
 def predict_emotions():
     try:
         # Obtener la imagen procesada desde el campo 'data' en Form-Data
-        file = request.files.get('data')
+        file = request.files.get('image')
         if not file:
             return jsonify({"error": "No se proporcionó ninguna imagen procesada"}), 400
 
